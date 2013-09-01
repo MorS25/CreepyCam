@@ -31,17 +31,29 @@ bool checkCam(){
 	// this function checks if a camera is connected or in use by another program
 	VideoCapture creepyCam(0);
 	if(!creepyCam.isOpened()){
-		std::cout << "Failed to make connect to CreepyCam" << std::endl;
+		std::cout << "Failed to make connection to CreepyCam" << std::endl;
 		return false;
 	}
 	creepyCam.release();
 	return true;
 }
 
+cv::Mat takePicture(){
+	VideoCapture creepyCam(0);
+	while(!creepyCam.isOpened()){
+		std::cout << "Failed to make connection to CreepyCam polling" << std::endl;
+		VideoCapture creepyCam(0);
+	}
+	Mat pic;
+	creepyCam >> pic;
+	creepyCam.release();
+	return pic;
+}
+
 void snapAndSave(char* dir, char* fileName){
 	VideoCapture creepyCam(0); //try to place lock on camera
 	if(!creepyCam.isOpened()){
-		std::cout << "Failed to make connect to CreepyCam" << std::endl;
+		std::cout << "Failed to make connection to CreepyCam" << std::endl;
 		exit(EXIT_FAILURE);
 	}
 	Mat frame;
@@ -57,4 +69,66 @@ void snapAndSave(char* dir, char* fileName){
 	frame.release();
 	/* release lock on camera */ 
 	creepyCam.release();
+	free(whereToSave);
+}
+
+cv::Mat createDifferentialImage(cv::Mat img1, cv::Mat img2){
+	cv::Mat differential;
+	absdiff(img1, img2, differential);
+	return differential;
+
+}
+cv::Mat xORImage(cv::Mat img1, cv::Mat img2){
+	cv::Mat xorImg;
+	bitwise_xor(img1, img2, xorImg);
+	return xorImg;
+}
+
+bool checkForMotion(cv::Mat xorimg, int threshold){
+	return false;
+
+	// stub to be implemented
+}
+
+void saveImg(char* dir, cv::Mat img){
+	/*
+		char filename[] = time();
+		char extention[] = ".jpg"
+		int newSize = strlen(dir)  + strlen(fileName) + strlen(extention) + 1; 
+		char * whereToSave = (char *)malloc(newSize);
+		strcpy(whereToSave,dir);
+		strcat(whereToSave,fileName);
+		strcat(whereToSave, extention);
+		imwrite(whereToSave, frame);
+		frame.release();
+		free(whereToSave);
+	*/
+	// stub to be implemented
+}
+
+void motionThread(char* dir, int threshold){
+	bool motion = false;
+	Mat img1 = takePicture();
+	/* turn to greyscale */
+	cvtColor(img1, img1, CV_RGB2GRAY);
+	/* wait 1 second */
+	sleep(1);
+	Mat img2 = takePicture();
+	cvtColor(img2, img2, CV_RGB2GRAY);
+	sleep(1);
+	Mat img3 = takePicture();
+	cvtColor(img3, img3, CV_RGB2GRAY);
+	Mat diff1 = createDifferentialImage(img1, img2);
+	img1.release();
+	Mat diff2 = createDifferentialImage(img2, img3);
+	img3.release();
+	Mat xorImg = xORImage(diff1, diff2);
+	diff1.release();
+	diff2.release();
+	motion = checkForMotion(xorImg, 500);
+	xorImg.release();
+	if(motion == true){
+		saveImg(dir, img2);
+	}
+	img2.release();
 }
