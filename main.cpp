@@ -11,7 +11,7 @@ int main ()
 	/*  USER CAN EDIT THESE VARIABLES */
 
 	int delay = 500;
-	char* default_dir = "/home/pi/CreepyCam/images/";
+	char default_dir[] = "/home/pi/CreepyCam/images/";
 	
 	/* ############################# */
 	/* #### DO NOT TOUCH BELOW ##### */
@@ -30,6 +30,7 @@ int main ()
 		exit(EXIT_FAILURE);
 	}
 
-	snapAndSave(default_dir, "test.jpg");
+	char testFileName[] = "test.jpg";
+	snapAndSave(default_dir, testFileName);
 	exit(EXIT_SUCCESS);
 }
