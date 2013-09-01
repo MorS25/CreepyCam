@@ -39,7 +39,7 @@ bool checkCam(){
 }
 
 void snapAndSave(char* dir, char* fileName){
-	VideoCapture creepyCam(0);
+	VideoCapture creepyCam(0); //try to place lock on camera
 	if(!creepyCam.isOpened()){
 		std::cout << "Failed to make connect to CreepyCam" << std::endl;
 		exit(EXIT_FAILURE);
@@ -53,6 +53,8 @@ void snapAndSave(char* dir, char* fileName){
 	strcat(whereToSave,fileName);
 	/* write to file */
 	imwrite(whereToSave, frame);
+	/* free img memory */
+	frame.release();
+	/* release lock on camera */ 
 	creepyCam.release();
 }
-
