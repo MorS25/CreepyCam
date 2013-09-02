@@ -85,25 +85,24 @@ cv::Mat xORImage(cv::Mat img1, cv::Mat img2){
 }
 
 bool checkForMotion(cv::Mat xorimg, int threshold){
+	int change = 0;
+	change = countNonZero(xorimg);
+	if(change>threshold){
+		return true;
+	}
 	return false;
-
-	// stub to be implemented
 }
 
-void saveImg(char* dir, cv::Mat img){
-	/*
-		char filename[] = time();
-		char extention[] = ".jpg"
-		int newSize = strlen(dir)  + strlen(fileName) + strlen(extention) + 1; 
-		char * whereToSave = (char *)malloc(newSize);
-		strcpy(whereToSave,dir);
-		strcat(whereToSave,fileName);
-		strcat(whereToSave, extention);
-		imwrite(whereToSave, frame);
-		frame.release();
-		free(whereToSave);
-	*/
-	// stub to be implemented
+void saveImg(char* fileName, char* dir, cv::Mat img){
+	char extention[] = ".jpg";
+	int newSize = strlen(dir)  + strlen(fileName) + strlen(extention) + 1; 
+	char * whereToSave = (char *)malloc(newSize);
+	strcpy(whereToSave,dir);
+	strcat(whereToSave,fileName);
+	strcat(whereToSave, extention);
+	imwrite(whereToSave, img);
+	img.release();
+	free(whereToSave);
 }
 
 void motionThread(char* dir, int threshold){
@@ -127,8 +126,10 @@ void motionThread(char* dir, int threshold){
 	diff2.release();
 	motion = checkForMotion(xorImg, 500);
 	xorImg.release();
+	//temp code for testing
+	char filename[] = "test.jpg";
 	if(motion == true){
-		saveImg(dir, img2);
+		saveImg(filename, dir, img2);
 	}
 	img2.release();
 }
