@@ -47,3 +47,4 @@ depend : $(SRC) $(HDR)
 clean :
 	-rm -f depend
 	-rm -f *.o
+	-rm ${TARGET}
