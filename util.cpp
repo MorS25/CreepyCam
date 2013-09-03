@@ -38,16 +38,13 @@ bool checkCam(){
 	return true;
 }
 
-cv::Mat takePicture(){
+void takePicture(cv::Mat& whereToSave){
 	VideoCapture creepyCam(0);
 	while(!creepyCam.isOpened()){
 		std::cout << "Failed to make connection to CreepyCam polling" << std::endl;
 		VideoCapture creepyCam(0);
 	}
-	Mat pic;
-	creepyCam >> pic;
-	creepyCam.release();
-	return pic;
+	creepyCam >> whereToSave;
 }
 
 void snapAndSave(char* dir, char* fileName){
@@ -68,7 +65,6 @@ void snapAndSave(char* dir, char* fileName){
 	/* free img memory */
 	frame.release();
 	/* release lock on camera */ 
-	creepyCam.release();
 	free(whereToSave);
 }
 
@@ -93,25 +89,30 @@ bool checkForMotion(cv::Mat xorimg, int threshold){
 	return false;
 }
 
-void saveImg(char* fileName, char* dir, cv::Mat img){
+void saveImg(char* fileName, char* dir, cv::Mat& img){
 	char extention[] = ".jpg";
 	int newSize = strlen(dir)  + strlen(fileName) + strlen(extention) + 1; 
 	char * whereToSave = (char *)malloc(newSize);
 	strcpy(whereToSave,dir);
 	strcat(whereToSave,fileName);
 	strcat(whereToSave, extention);
+	std::cout << "Writing to file now" << std::endl;
 	imwrite(whereToSave, img);
-	img.release();
+	std::cout << "Wrote to file" << std::endl;
 	free(whereToSave);
+	std::cout << "Freed whereToSave" << std::endl;
 }
 
 void motionThread(char* dir, int threshold){
-	bool motion = false;
-	Mat img1 = takePicture();
+	
+	//bool motion = false;
+	//Mat img1 = takePicture();
 	/* turn to greyscale */
-	cvtColor(img1, img1, CV_RGB2GRAY);
+	//cvtColor(img1, img1, CV_RGB2GRAY);
 	/* wait 1 second */
-	sleep(1);
+	//sleep(1);
+
+	/*
 	Mat img2 = takePicture();
 	cvtColor(img2, img2, CV_RGB2GRAY);
 	sleep(1);
@@ -132,4 +133,5 @@ void motionThread(char* dir, int threshold){
 		saveImg(filename, dir, img2);
 	}
 	img2.release();
+	*/
 }
