@@ -8,7 +8,7 @@ bool initilizeCreepy(char* dir);
 bool checkDir(char* dir);
 bool checkCam();
 void snapAndSave(char* dir, char* fileName);
-void takePicture(cv::Mat& whereToSave);
+cv::Mat takePicture();
 cv::Mat createDifferentialImage(cv::Mat img1, cv::Mat img2);
 cv::Mat xORImage(cv::Mat img1, cv::Mat img2);
 bool checkForMotion(cv::Mat xorimg, int threshold);

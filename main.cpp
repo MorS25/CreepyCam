@@ -38,8 +38,11 @@ int main ()
 		exit(EXIT_SUCCESS);
 	}
 	cv::Mat pic1;
-	takePicture(pic1);
+	pic1 = takePicture();
+	cvtColor(pic1, pic1, CV_RGB2GRAY);
+	saveImg("pic1", default_dir, pic1);
 	/*
+	imwrite("/home/pi/CreepyCam/images/pic1.jpg", pic1);
 	cvtColor(pic1, pic1, CV_RGB2GRAY);
 	sleep(1);
 	cv::Mat pic2 = takePicture();
@@ -48,9 +51,9 @@ int main ()
 	cv::Mat pic3 = takePicture();
 	cv::Mat diff1 = createDifferentialImage(pic1, pic2);
 	cvtColor(pic3, pic3, CV_RGB2GRAY);
-	*/
+	
 	saveImg("pic1", default_dir, pic1);
-	/*saveImg("pic2", default_dir, pic2);
+	saveImg("pic2", default_dir, pic2);
 	saveImg("pic3", default_dir, pic3);
 	saveImg("diff1", default_dir, diff1);
 	*/

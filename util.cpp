@@ -38,13 +38,15 @@ bool checkCam(){
 	return true;
 }
 
-void takePicture(cv::Mat& whereToSave){
+cv::Mat takePicture(){
+	cv::Mat pic;
 	VideoCapture creepyCam(0);
 	while(!creepyCam.isOpened()){
 		std::cout << "Failed to make connection to CreepyCam polling" << std::endl;
 		VideoCapture creepyCam(0);
 	}
-	creepyCam >> whereToSave;
+	creepyCam >> pic;
+	return pic.clone();
 }
 
 void snapAndSave(char* dir, char* fileName){
