@@ -11,14 +11,14 @@ int main ()
 	/*  USER CAN EDIT THESE VARIABLES */
 
 	int delay = 500;
-	int threshold = 500;
+	int threshold = 5;
 	char default_dir[] = "/home/pi/CreepyCam/images/";
-	bool test_mode = false;
+	bool test_mode = true;
 	
 	/* ############################# */
 	/* #### DO NOT TOUCH BELOW ##### */
 
-
+	int threadNo = 0;
 	bool init = false;
 	CvCapture* creepyCam = NULL;
 	cout << "Welcome to CreepyCam" << endl;
@@ -32,17 +32,23 @@ int main ()
 		exit(EXIT_FAILURE);
 	}
 
-	char testFileName[] = "test.jpg";
 	if(test_mode == true){
-		snapAndSave(default_dir, testFileName);
+		while(true){
+		Mat testImg;
+		char fileName[50];
+		sprintf(fileName, "testFile%d", threadNo);
+		testFree(testImg);
+		/*saveImg(fileName, default_dir, testImg);*/
+		cout << "current pic is " << threadNo << endl;
+		threadNo++;
+		}
 		exit(EXIT_SUCCESS);
 	}
-	/*
-	cv::Mat pic1;
-	pic1 = takePicture();
-	cvtColor(pic1, pic1, CV_RGB2GRAY);
-	saveImg("pic1", default_dir, pic1);
-	*/
-	motionThread(default_dir, threshold);
+
+	while(true){
+		motionThread(default_dir, threshold, threadNo);
+		usleep(5000);
+		threadNo++;
+	}
 	exit(EXIT_SUCCESS);
 }
