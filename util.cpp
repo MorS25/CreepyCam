@@ -70,21 +70,26 @@ void snapAndSave(char* dir, char* fileName){
 	free(whereToSave);
 }
 
-cv::Mat createDifferentialImage(cv::Mat img1, cv::Mat img2){
+cv::Mat createDifferentialImage(cv::Mat& img1, cv::Mat& img2){
 	cv::Mat differential;
 	absdiff(img1, img2, differential);
-	return differential;
+	return differential.clone();
 
 }
-cv::Mat xORImage(cv::Mat img1, cv::Mat img2){
+cv::Mat xORImage(cv::Mat& img1, cv::Mat& img2){
 	cv::Mat xorImg;
+	cv::Mat output;
 	bitwise_xor(img1, img2, xorImg);
-	return xorImg;
+	bitwise_not(xorImg, output);
+	return output.clone();
 }
 
-bool checkForMotion(cv::Mat xorimg, int threshold){
-	int change = 0;
-	change = countNonZero(xorimg);
+bool checkForMotion(cv::Mat& xorimg, int threshold){
+	int rows = xorimg.rows;
+	int cols = xorimg.cols;
+	int numOfPixels = rows*cols;
+	int change = numOfPixels - countNonZero(xorimg);
+	std::cout << "Amount of change is " << change << std::endl;
 	if(change>threshold){
 		return true;
 	}
@@ -98,42 +103,42 @@ void saveImg(char* fileName, char* dir, cv::Mat& img){
 	strcpy(whereToSave,dir);
 	strcat(whereToSave,fileName);
 	strcat(whereToSave, extention);
-	std::cout << "Writing to file now" << std::endl;
 	imwrite(whereToSave, img);
-	std::cout << "Wrote to file" << std::endl;
+	std::cout << "Wrote " << fileName << ".jpg" << std::endl;
 	free(whereToSave);
-	std::cout << "Freed whereToSave" << std::endl;
 }
 
 void motionThread(char* dir, int threshold){
-	
-	//bool motion = false;
-	//Mat img1 = takePicture();
+	bool motion = false;
+	Mat img1 = takePicture();
 	/* turn to greyscale */
-	//cvtColor(img1, img1, CV_RGB2GRAY);
+	cvtColor(img1, img1, CV_RGB2GRAY);
 	/* wait 1 second */
-	//sleep(1);
-
-	/*
+	sleep(1);
 	Mat img2 = takePicture();
+	Mat motionPic = img2.clone();
 	cvtColor(img2, img2, CV_RGB2GRAY);
 	sleep(1);
 	Mat img3 = takePicture();
 	cvtColor(img3, img3, CV_RGB2GRAY);
 	Mat diff1 = createDifferentialImage(img1, img2);
+	char difftxt1[] = "diff1";
+	saveImg(difftxt1, dir, diff1);
 	img1.release();
 	Mat diff2 = createDifferentialImage(img2, img3);
+	char difftxt2[] = "diff2";
+	saveImg(difftxt2, dir, diff2);
 	img3.release();
 	Mat xorImg = xORImage(diff1, diff2);
 	diff1.release();
 	diff2.release();
 	motion = checkForMotion(xorImg, 500);
+	char filename1[] = "xor";
+	saveImg(filename1, dir, xorImg);
 	xorImg.release();
-	//temp code for testing
-	char filename[] = "test.jpg";
+	char filename2[] = "motion";
 	if(motion == true){
-		saveImg(filename, dir, img2);
+		saveImg(filename2, dir, motionPic);
 	}
 	img2.release();
-	*/
 }
