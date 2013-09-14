@@ -13,7 +13,7 @@ int main ()
 	int delay = 500;
 	int threshold = 5;
 	char default_dir[] = "/home/pi/CreepyCam/images/";
-	bool test_mode = true;
+	bool test_mode = false;
 	
 	/* ############################# */
 	/* #### DO NOT TOUCH BELOW ##### */
@@ -34,13 +34,15 @@ int main ()
 
 	if(test_mode == true){
 		while(true){
-		Mat testImg;
-		char fileName[50];
-		sprintf(fileName, "testFile%d", threadNo);
-		testFree(testImg);
-		/*saveImg(fileName, default_dir, testImg);*/
-		cout << "current pic is " << threadNo << endl;
-		threadNo++;
+			Mat testImg;
+			char fileName[50];
+			sprintf(fileName, "testFile%d", threadNo);
+			testFree(testImg);
+			/*saveImg(fileName, default_dir, testImg);*/
+			cout << "current pic is " << threadNo << endl;
+			saveImg(fileName, default_dir, testImg);
+			threadNo++;
+			testImg.release();
 		}
 		exit(EXIT_SUCCESS);
 	}

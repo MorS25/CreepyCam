@@ -41,9 +41,9 @@ bool checkCam(){
 cv::Mat takePicture(){
 	cv::Mat pic;
 	VideoCapture creepyCam(0);
-	while(!creepyCam.isOpened()){
+	if(!creepyCam.isOpened()){
 		std::cout << "Failed to make connection to CreepyCam polling" << std::endl;
-		VideoCapture creepyCam(0);
+		exit(1);
 	}
 	creepyCam >> pic;
 	return pic.clone();
@@ -60,6 +60,7 @@ cv::Mat xORImage(cv::Mat& img1, cv::Mat& img2){
 	cv::Mat output;
 	bitwise_xor(img1, img2, xorImg);
 	bitwise_not(xorImg, output);
+	threshold(output, output, 140, 255, CV_THRESH_BINARY);
 	return output.clone();
 }
 
@@ -115,12 +116,14 @@ void motionThread(char* dir, int threshold, int threadNo){
 }
 
 void testFree(cv::Mat& img){
-	VideoCapture creepyCam(0); //try to place lock on camera
+	cv::Mat pic;
+	VideoCapture creepyCam(0);
 	if(!creepyCam.isOpened()){
-		std::cout << "Failed to make connection to CreepyCam" << std::endl;
-		exit(EXIT_FAILURE);
+		std::cout << "Failed to make connection to CreepyCam polling" << std::endl;
+		exit(1);
 	}
-	Mat frame;
-	creepyCam >> frame;
-	frame = Mat();
+	creepyCam >> pic;
+	pic.copyTo(img);
+	pic.release();
+	creepyCam.release();
 }
