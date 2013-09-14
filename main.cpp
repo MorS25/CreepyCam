@@ -58,7 +58,7 @@ int main ()
 			thr_data[i].dir = default_dir; 
 			thr_data[i].threshold = threshold;
 			if ((rc = pthread_create(&thr[i], NULL, motionThread, &thr_data[i]))) {
-				fprintf(stderr, "error: pthread_create, rc: %d\n", rc);
+				fprintf(stderr, "error: pthread_create rc: %d\n", rc);
 				return EXIT_FAILURE;
 			}
 			usleep(delay);

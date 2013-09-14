@@ -42,7 +42,7 @@ cv::Mat takePicture(){
 	cv::Mat pic;
 	VideoCapture creepyCam(0);
 	if(!creepyCam.isOpened()){
-		std::cout << "Failed to make connection to CreepyCam polling" << std::endl;
+		std::cout << "Failed to make connection to CreepyCam" << std::endl;
 		exit(1);
 	}
 	creepyCam >> pic;

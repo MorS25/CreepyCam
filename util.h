@@ -13,6 +13,7 @@ typedef struct motionThread {
 	int threshold;
 } thread_data;
 
+
 bool initilizeCreepy(char* dir);
 bool checkDir(char* dir);
 bool checkCam();
