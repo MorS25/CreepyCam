@@ -88,42 +88,25 @@ void saveImg(char* fileName, char* dir, cv::Mat& img){
 	free(whereToSave);
 }
 
-void motionThread(char* dir, int threshold, int threadNo){
+void *motionThread(void *arg){
+	thread_data *data = (thread_data *)arg;
+	cv::Mat picture;
 	bool motion = false;
 	char xorFile[50];
 	char motionFile[50];
-	sprintf(xorFile, "xorFile%d", threadNo);
-	sprintf(motionFile, "motion%d", threadNo);
-	Mat img1 = takePicture();
-	/* turn to greyscale */
-	cvtColor(img1, img1, CV_RGB2GRAY);
-	usleep(2000);
-	Mat img2 = takePicture();
-	Mat motionPic = img2.clone();
-	cvtColor(img2, img2, CV_RGB2GRAY);
-	usleep(2000);
-	Mat img3 = takePicture();
-	cvtColor(img3, img3, CV_RGB2GRAY);
-	Mat diff1 = createDifferentialImage(img1, img2);
-	Mat diff2 = createDifferentialImage(img2, img3);
+	picture = data->curr.clone();
+	sprintf(xorFile, "xorFile%d", data->threadNo);
+	sprintf(motionFile, "motion%d", data->threadNo);
+	cvtColor(data->prev, data->prev, CV_RGB2GRAY);
+	cvtColor(data->curr, data->curr, CV_RGB2GRAY);
+	cvtColor(data->next, data->next, CV_RGB2GRAY);
+	Mat diff1 = createDifferentialImage(data->prev, data->curr);
+	Mat diff2 = createDifferentialImage(data->curr, data->next);
 	Mat xorImg = xORImage(diff1, diff2);
-	motion = checkForMotion(xorImg, threshold);
-	saveImg(xorFile, dir, xorImg);
+	motion = checkForMotion(xorImg, data->threshold);
+	saveImg(xorFile, data->dir, xorImg);
 	char filename2[] = "motion";
 	if(motion == true){
-		saveImg(motionFile, dir, motionPic);
+		saveImg(motionFile, data->dir, picture);
 	}
-}
-
-void testFree(cv::Mat& img){
-	cv::Mat pic;
-	VideoCapture creepyCam(0);
-	if(!creepyCam.isOpened()){
-		std::cout << "Failed to make connection to CreepyCam polling" << std::endl;
-		exit(1);
-	}
-	creepyCam >> pic;
-	pic.copyTo(img);
-	pic.release();
-	creepyCam.release();
 }

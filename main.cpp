@@ -3,24 +3,28 @@
 #include <string>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
+#include <pthread.h>
 using namespace cv;
 using namespace std;
+
+#define NUM_THREADS 3
 
 int main ()
 {
 	/*  USER CAN EDIT THESE VARIABLES */
-
-	int delay = 500;
-	int threshold = 5;
+	int delay = 5000;
+	int threshold = 500;
 	char default_dir[] = "/home/pi/CreepyCam/images/";
 	bool test_mode = false;
 	
 	/* ############################# */
 	/* #### DO NOT TOUCH BELOW ##### */
-
+	int i, rc;
+	cv::Mat prev;
+	cv::Mat curr;
+	cv::Mat next;
 	int threadNo = 0;
 	bool init = false;
-	CvCapture* creepyCam = NULL;
 	cout << "Welcome to CreepyCam" << endl;
 	cout << "Pull the latest version on" << endl;
 	cout << "https://github.com/Jamble/CreepyCam" << endl;
@@ -32,25 +36,40 @@ int main ()
 		exit(EXIT_FAILURE);
 	}
 
-	if(test_mode == true){
-		while(true){
-			Mat testImg;
-			char fileName[50];
-			sprintf(fileName, "testFile%d", threadNo);
-			testFree(testImg);
-			/*saveImg(fileName, default_dir, testImg);*/
-			cout << "current pic is " << threadNo << endl;
-			saveImg(fileName, default_dir, testImg);
-			threadNo++;
-			testImg.release();
-		}
-		exit(EXIT_SUCCESS);
-	}
+	/* TAKE STARTING PICTURES */
+
+	prev = takePicture();
+	usleep(delay);
+	curr = takePicture();
+	usleep(delay);
+	next = takePicture();
+
+	pthread_t thr[NUM_THREADS];
+	thread_data thr_data[NUM_THREADS];
+
+	/* BEGIN INFINITE LOOP OF THREADS */
 
 	while(true){
-		motionThread(default_dir, threshold, threadNo);
-		usleep(5000);
-		threadNo++;
+		for (i = 0; i < NUM_THREADS; ++i) {
+			thr_data[i].threadNo = threadNo;
+			thr_data[i].prev = prev.clone();
+			thr_data[i].curr = curr.clone();
+			thr_data[i].next = next.clone();
+			thr_data[i].dir = default_dir; 
+			thr_data[i].threshold = threshold;
+			if ((rc = pthread_create(&thr[i], NULL, motionThread, &thr_data[i]))) {
+				fprintf(stderr, "error: pthread_create, rc: %d\n", rc);
+				return EXIT_FAILURE;
+			}
+			usleep(delay);
+			curr = prev;
+			next = curr;
+			prev = takePicture();
+			threadNo++;
+		}
+		for (i = 0; i < NUM_THREADS; ++i) {
+			pthread_join(thr[i], NULL);
+		}
 	}
 	exit(EXIT_SUCCESS);
 }
