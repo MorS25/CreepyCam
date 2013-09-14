@@ -15,7 +15,6 @@ int main ()
 	int delay = 5000;
 	int threshold = 500;
 	char default_dir[] = "/home/pi/CreepyCam/images/";
-	bool test_mode = false;
 	
 	/* ############################# */
 	/* #### DO NOT TOUCH BELOW ##### */
@@ -25,10 +24,12 @@ int main ()
 	cv::Mat next;
 	int threadNo = 0;
 	bool init = false;
+	bool test_mode;
 	cout << "Welcome to CreepyCam" << endl;
 	cout << "Pull the latest version on" << endl;
-	cout << "https://github.com/Jamble/CreepyCam" << endl;
-
+	cout << "https://github.com/Jamble/CreepyCam";
+	cout << endl << "Should we run this program in test mode? (1/0): ";
+	cin >> test_mode;
 	/* INITILIZE */
 	init = initilizeCreepy(default_dir);
 	if(init == false){
@@ -37,6 +38,19 @@ int main ()
 	}
 
 	/* TAKE STARTING PICTURES */
+	if(test_mode == true){
+		while(true){
+			Mat testImg;
+			char fileName[50];
+			sprintf(fileName, "testFile%d", threadNo);
+			testImg = takePicture();
+			cout << "current pic is " << threadNo << endl;
+			saveImg(fileName, default_dir, testImg);
+			threadNo++;
+			testImg.release();
+		}
+		exit(EXIT_SUCCESS);
+	} 
 
 	prev = takePicture();
 	usleep(delay);
@@ -48,7 +62,6 @@ int main ()
 	thread_data thr_data[NUM_THREADS];
 
 	/* BEGIN INFINITE LOOP OF THREADS */
-
 	while(true){
 		for (i = 0; i < NUM_THREADS; ++i) {
 			thr_data[i].threadNo = threadNo;
