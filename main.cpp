@@ -60,11 +60,11 @@ int main ()
 		exit(EXIT_SUCCESS);
 	} 
 
-	prev = takePicture();
+	creepyCam.read(prev);
 	usleep(delay);
-	curr = takePicture();
+	creepyCam.read(curr);
 	usleep(delay);
-	next = takePicture();
+	creepyCam.read(next);
 
 	pthread_t thr[NUM_THREADS];
 	thread_data thr_data[NUM_THREADS];
@@ -73,9 +73,9 @@ int main ()
 	while(true){
 		for (i = 0; i < NUM_THREADS; ++i) {
 			thr_data[i].threadNo = threadNo;
-			thr_data[i].prev = prev.clone();
-			thr_data[i].curr = curr.clone();
-			thr_data[i].next = next.clone();
+			thr_data[i].prev = prev;
+			thr_data[i].curr = curr;
+			thr_data[i].next = next;
 			thr_data[i].dir = default_dir; 
 			thr_data[i].threshold = threshold;
 			if ((rc = pthread_create(&thr[i], NULL, motionThread, &thr_data[i]))) {
@@ -85,7 +85,7 @@ int main ()
 			usleep(delay);
 			curr = prev;
 			next = curr;
-			prev = takePicture();
+			creepyCam.read(prev);
 			threadNo++;
 		}
 		for (i = 0; i < NUM_THREADS; ++i) {
