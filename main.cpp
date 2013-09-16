@@ -36,6 +36,14 @@ int main ()
 		cout << "Something went bad initilizing" << endl;
 		exit(EXIT_FAILURE);
 	}
+	/* Init Camera */
+	VideoCapture creepyCam(0);
+	
+	if(!creepyCam.isOpened()){
+		std::cout << "Failed to make connection to CreepyCam" << std::endl;
+		exit(1);
+	}
+
 
 	/* TAKE STARTING PICTURES */
 	if(test_mode == true){
@@ -43,7 +51,7 @@ int main ()
 			Mat testImg;
 			char fileName[50];
 			sprintf(fileName, "testFile%d", threadNo);
-			testImg = takePicture();
+			creepyCam.read(testImg);
 			cout << "current pic is " << threadNo << endl;
 			saveImg(fileName, default_dir, testImg);
 			threadNo++;

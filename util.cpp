@@ -45,7 +45,7 @@ cv::Mat takePicture(){
 		std::cout << "Failed to make connection to CreepyCam" << std::endl;
 		exit(1);
 	}
-	creepyCam >> pic;
+	creepyCam.read(pic);
 	return pic.clone();
 }
 
