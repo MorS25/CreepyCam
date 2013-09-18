@@ -23,7 +23,7 @@
 TARGET = CreepyCam
 CC = g++
 SRC = main.cpp util.cpp
-HDR = util.h
+HDR = util.h config.h
 
 # -03 option aims to optimise as much as possible
 CFLAGS = -W -pedantic -Wall -ansi -O3
