@@ -2,7 +2,8 @@
 #define _UTIL_H_
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
-#include <string>
+using namespace std;
+using namespace cv;
 
 typedef struct motionThread {
  	int threadNo;
@@ -17,10 +18,11 @@ typedef struct motionThread {
 bool initilizeCreepy(char* dir);
 bool checkDir(char* dir);
 bool checkCam();
-cv::Mat takePicture();
-cv::Mat createDifferentialImage(cv::Mat& img1, cv::Mat& img2);
-cv::Mat xORImage(cv::Mat& img1, cv::Mat& img2);
-bool checkForMotion(cv::Mat& xorimg, int threshold);
-void saveImg(char* fileName, char* dir, cv::Mat& img);
+Mat createDifferentialImage(Mat& img1, Mat& img2);
+Mat xORImage(Mat& img1, Mat& img2);
+bool checkForMotion(Mat& xorimg, int threshold);
+void saveImg(char* fileName, char* dir, Mat& img);
 void *motionThread(void *arg);
+void *inputThread(void *arg);
+const std::string currentDateTime();
 #endif
