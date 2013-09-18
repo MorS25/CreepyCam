@@ -1,29 +1,58 @@
 #include "util.h"
+#include "config.h"
+//dirent is used for directory checking
 #include <dirent.h>
-#include <iostream>
-
+#include <string.h>
+#include <time.h>
 using namespace std;
 using namespace cv;
 
 bool initilizeCreepy(char* dir){
 	bool camCheck = checkCam();
+	if(camCheck == false){
+		cout << "Could not connect to camera" << endl;
+		return false;
+	}
 	bool dirCheck = checkDir(dir);
-	if(dirCheck == true && camCheck == true){
-		return true;
-	}
 	if(dirCheck== false){
-		std::cout << "Could not open " << dir << std::endl;
+		cout << "Could not open directory" << endl;
+		return false;
 	}
-	return false;
+	return true;
 }
 
 bool checkDir(char* dir){
 	DIR *dirPtr = NULL;
-	dirPtr = opendir(dir);
-	if(dirPtr == NULL){
-		return false;
+	bool pass = false;
+	string input;
+	string input_dir;
+	const char* new_dir;
+	new_dir = dir;
+	cin.clear();
+	cin.ignore(numeric_limits<streamsize>::max(), '\n');
+	cout << "### Did you want to use " << dir << " to save your files? (yes/no): ";
+	getline (cin, input);
+	while(input.compare("yes") != 0 && input.compare("no") != 0){
+		cin.clear();
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		cout << "### Invalid input. Try again: ";
+		getline(cin, input);
+	}
+	if(input.compare("no") == 0){
+		cout << "### Enter directory: ";
+		getline(cin, input_dir);
+		new_dir = input_dir.c_str();
+	}
+	dirPtr = opendir(new_dir);
+	while(dirPtr == NULL){
+		cout << "### Invalid directory try again: ";
+		getline(cin, input_dir);
+		new_dir = input_dir.c_str();
+		dirPtr = opendir(new_dir);
 	}
 	closedir(dirPtr);
+	cout << "### Directory" << new_dir << "is valid" << endl;
+	strcpy(dir, new_dir);
 	return true;
 }
 
@@ -31,52 +60,44 @@ bool checkCam(){
 	// this function checks if a camera is connected or in use by another program
 	VideoCapture creepyCam(0);
 	if(!creepyCam.isOpened()){
-		std::cout << "Failed to make connection to CreepyCam" << std::endl;
+		cout << "Failed to make connection to CreepyCam" << endl;
 		return false;
 	}
 	creepyCam.release();
 	return true;
 }
 
-cv::Mat takePicture(){
-	cv::Mat pic;
-	VideoCapture creepyCam(0);
-	if(!creepyCam.isOpened()){
-		std::cout << "Failed to make connection to CreepyCam" << std::endl;
-		exit(1);
-	}
-	creepyCam.read(pic);
-	return pic.clone();
-}
-
-cv::Mat createDifferentialImage(cv::Mat& img1, cv::Mat& img2){
-	cv::Mat differential;
+Mat createDifferentialImage(Mat& img1, Mat& img2){
+	Mat differential;
 	absdiff(img1, img2, differential);
 	return differential.clone();
 
 }
-cv::Mat xORImage(cv::Mat& img1, cv::Mat& img2){
-	cv::Mat xorImg;
-	cv::Mat output;
+Mat xORImage(Mat& img1, Mat& img2){
+	Mat xorImg;
+	Mat output;
 	bitwise_xor(img1, img2, xorImg);
 	bitwise_not(xorImg, output);
 	threshold(output, output, 140, 255, CV_THRESH_BINARY);
 	return output.clone();
 }
 
-bool checkForMotion(cv::Mat& xorimg, int threshold){
+bool checkForMotion(Mat& xorimg, int threshold){
 	int rows = xorimg.rows;
 	int cols = xorimg.cols;
 	int numOfPixels = rows*cols;
 	int change = numOfPixels - countNonZero(xorimg);
-	std::cout << "Amount of change is " << change << std::endl;
+	if(DEBUG==1)
+		cout << "Amount of change is " << change << endl;
 	if(change>threshold){
+		if(DEBUG==1)
+			cout << "Motion detected" << endl;
 		return true;
 	}
 	return false;
 }
 
-void saveImg(char* fileName, char* dir, cv::Mat& img){
+void saveImg(char* fileName, char* dir, Mat& img){
 	char extention[] = ".jpg";
 	int newSize = strlen(dir)  + strlen(fileName) + strlen(extention) + 1; 
 	char * whereToSave = (char *)malloc(newSize);
@@ -84,19 +105,24 @@ void saveImg(char* fileName, char* dir, cv::Mat& img){
 	strcat(whereToSave,fileName);
 	strcat(whereToSave, extention);
 	imwrite(whereToSave, img);
-	std::cout << "Wrote " << fileName << ".jpg" << std::endl;
+	if(DEBUG==1)
+		cout << "Wrote " << fileName << ".jpg" << endl;
 	free(whereToSave);
 }
 
 void *motionThread(void *arg){
 	thread_data *data = (thread_data *)arg;
-	cv::Mat picture;
+	Mat picture;
 	bool motion = false;
 	char xorFile[50];
 	char motionFile[50];
 	picture = data->curr.clone();
-	sprintf(xorFile, "xorFile%d", data->threadNo);
-	sprintf(motionFile, "motion%d", data->threadNo);
+	string currTimeString = currentDateTime();
+	char* currTime =  new char[currTimeString.length() + 1];
+	strcpy(currTime, currTimeString.c_str());
+	sprintf(xorFile, "xorFile%s(%d)", currTime, data->threadNo);
+	sprintf(motionFile, "motion%s(%d)", currTime, data->threadNo);
+	delete[] currTime;
 	cvtColor(data->prev, data->prev, CV_RGB2GRAY);
 	cvtColor(data->curr, data->curr, CV_RGB2GRAY);
 	cvtColor(data->next, data->next, CV_RGB2GRAY);
@@ -104,9 +130,32 @@ void *motionThread(void *arg){
 	Mat diff2 = createDifferentialImage(data->curr, data->next);
 	Mat xorImg = xORImage(diff1, diff2);
 	motion = checkForMotion(xorImg, data->threshold);
-	saveImg(xorFile, data->dir, xorImg);
-	char filename2[] = "motion";
+	if(SAVEXOR==1)
+		saveImg(xorFile, data->dir, xorImg);
 	if(motion == true){
 		saveImg(motionFile, data->dir, picture);
 	}
+}
+
+
+void *inputThread(void *arg){
+	bool *loop = (bool *)arg;
+	string quit ("q");
+	string input;
+	while(quit.compare(input) != 0){
+		cout << endl << "Type 'q' to exit" << endl;
+		getline (cin, input);
+	}
+	*loop = false;
+}
+
+
+const std::string currentDateTime() {
+	//credits to TrungTN and jons34yp on stackoverflow.com
+    time_t now = time(0);
+    struct tm tstruct;
+    char buff[DEFAULT_BUFFER];
+    tstruct = *localtime(&now);
+    strftime(buff, sizeof(buff), "(%Y-%m-%d)(%H-%M-%S)", &tstruct);
+    return buff;
 }
