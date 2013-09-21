@@ -1,7 +1,7 @@
 CreepyCam
 =========
 
-Security camera using the Raspberry Pi
+Security camera using the Raspberry Pi that saves a picture only when motion is detected. This is accomplished using the differential images method which is a simple motion detection method for black and white images.
 
 Installation
 ===========
@@ -38,8 +38,8 @@ Version History
 =========
 
 Sep 21st, 2013
--You can now choose if you want to save all debug files (the differential and 3 originals) by modifying config.h and recompiling
--Fixed an issue where images were not getting swapped around. This was due to images being overwritten due to the multiple threads. We now .clone() images so no overwrites can occur. This fixed our motion detection again.
+- You can now choose if you want to save all debug files (the differential and 3 originals) by modifying config.h and recompiling
+- Fixed an issue where images were not getting swapped around. This was due to images being overwritten due to the multiple threads. We now .clone() images so no overwrites can occur. This fixed our motion detection again.
 
 Sep 18th, 2013
 - Added an extra thread for user input. This allows for non blocking IO
