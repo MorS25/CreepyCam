@@ -20,14 +20,15 @@ int main ()
 	cout << "Pull the latest version on" << endl;
 	cout << "https://github.com/Jamble/CreepyCam" << endl << endl;
 	cout << "############### SET UP ###############" << endl;
-	cout << "### Enter delay betweem camera shots(ms)(50-100 recommended): ";
+	cout << "Too fast a delay and little motions will not be captured" << endl;
+	cout << "### Enter delay betweem camera shots(ms)(50+ 300 recommended): ";
 	while(!(cin >> delay)){
 		cin.clear();
 		cin.ignore(numeric_limits<streamsize>::max(), '\n');
 		cout << "### Invalid input. Try again: ";
 	}
 	delay = delay * 1000;
-	cout << "### Enter sensativity(1=low 1000=high) (300 recommended): ";
+	cout << "### Enter sensativity(1=low 1000=high) (200 recommended): ";
 	while(!(cin >> threshold)){
 		cin.clear();
 		cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -91,23 +92,23 @@ int main ()
 			cout << "Failed to create IO thread" << endl;
 			exit(EXIT_FAILURE);
 		}
-		int i;
+		int i, rc;
 		cout << "Working";
 		while(loop){
 			for (i = 0; i < NUM_THREADS; ++i) {
 				thr_data[i].threadNo = threadNo;
-				thr_data[i].prev = prev;
-				thr_data[i].curr = curr;
-				thr_data[i].next = next;
+				thr_data[i].prev = prev.clone();
+				thr_data[i].curr = curr.clone();
+				thr_data[i].next = next.clone();
 				thr_data[i].dir = default_dir; 
 				thr_data[i].threshold = threshold;
-				if (pthread_create(&thr[i], NULL, motionThread, &thr_data[i]) != 0) {
+				if ((rc = pthread_create(&thr[i], NULL, motionThread, &thr_data[i]))) {
 						cout << "Failed to create a motion thread" << endl;
 						exit(EXIT_FAILURE);
 				}
 				usleep(delay);
-				curr = prev;
-				next = curr;
+				curr = prev.clone();
+				next = curr.clone();
 				creepyCam.read(prev);
 				threadNo++;
 			}
@@ -117,5 +118,6 @@ int main ()
 		}
 	}
 	pthread_join(nonBlockingIO, NULL);
+	creepyCam.release();
 	exit(EXIT_SUCCESS);
 }

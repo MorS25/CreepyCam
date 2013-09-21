@@ -34,7 +34,7 @@ Contribute
 No contributions will be accepted as this is a school project
 
 
-Verion History
+Version History
 =========
 
 Sep 18th, 2013

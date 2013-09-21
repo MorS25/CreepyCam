@@ -75,11 +75,10 @@ Mat createDifferentialImage(Mat& img1, Mat& img2){
 }
 Mat xORImage(Mat& img1, Mat& img2){
 	Mat xorImg;
-	Mat output;
 	bitwise_xor(img1, img2, xorImg);
-	bitwise_not(xorImg, output);
-	threshold(output, output, 140, 255, CV_THRESH_BINARY);
-	return output.clone();
+	bitwise_not(xorImg, xorImg);
+	threshold(xorImg, xorImg, 140, 255, CV_THRESH_BINARY);
+	return xorImg.clone();
 }
 
 bool checkForMotion(Mat& xorimg, int threshold){
@@ -114,27 +113,47 @@ void *motionThread(void *arg){
 	thread_data *data = (thread_data *)arg;
 	Mat picture;
 	bool motion = false;
-	char xorFile[50];
-	char motionFile[50];
+	char xorFile[DEFAULT_BUFFER];
+	char motionFile[DEFAULT_BUFFER];
 	picture = data->curr.clone();
 	string currTimeString = currentDateTime();
 	char* currTime =  new char[currTimeString.length() + 1];
 	strcpy(currTime, currTimeString.c_str());
 	sprintf(xorFile, "xorFile%s(%d)", currTime, data->threadNo);
 	sprintf(motionFile, "motion%s(%d)", currTime, data->threadNo);
-	delete[] currTime;
+	if(SAVEDEBUGIMGS==1){
+		char img1txt[DEFAULT_BUFFER];
+		char img2txt[DEFAULT_BUFFER];
+		char img3txt[DEFAULT_BUFFER];
+		sprintf(img1txt, "prev%s(%d)", currTime, data->threadNo);
+		sprintf(img2txt, "curr%s(%d)", currTime, data->threadNo);
+		sprintf(img3txt, "next%s(%d)", currTime, data->threadNo);
+		saveImg(img1txt, data->dir, data->prev);
+		saveImg(img2txt, data->dir, data->curr);
+		saveImg(img3txt, data->dir, data->next);
+	}
 	cvtColor(data->prev, data->prev, CV_RGB2GRAY);
 	cvtColor(data->curr, data->curr, CV_RGB2GRAY);
 	cvtColor(data->next, data->next, CV_RGB2GRAY);
 	Mat diff1 = createDifferentialImage(data->prev, data->curr);
 	Mat diff2 = createDifferentialImage(data->curr, data->next);
 	Mat xorImg = xORImage(diff1, diff2);
+	char diff1txt[DEFAULT_BUFFER];
+	char diff2txt[DEFAULT_BUFFER];
+	char xorImgtxt[DEFAULT_BUFFER];
+	if(SAVEDEBUGIMGS==1){
+		sprintf(diff1txt, "diff1%s(%d)", currTime, data->threadNo);
+		sprintf(diff2txt, "diff2%s(%d)", currTime, data->threadNo);
+		saveImg(diff1txt, data->dir, diff1);
+		saveImg(diff2txt, data->dir, diff2);
+	}
 	motion = checkForMotion(xorImg, data->threshold);
 	if(SAVEXOR==1)
 		saveImg(xorFile, data->dir, xorImg);
 	if(motion == true){
 		saveImg(motionFile, data->dir, picture);
 	}
+	delete[] currTime;
 }
 
 
