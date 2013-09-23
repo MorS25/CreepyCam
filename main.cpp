@@ -11,12 +11,11 @@ using namespace std;
 
 int main ()
 {
-	upload_check();
-
 	char default_dir[] = "/home/pi/CreepyCam/images/";
 	int threshold = 0;
 	int delay = 0;
 	bool test_mode;
+	bool upload = false;
 	bool loop = true;
 	pthread_t nonBlockingIO;
 	cout << "Welcome to CreepyCam" << endl;
@@ -48,6 +47,21 @@ int main ()
 		exit(EXIT_FAILURE);
 	}
 	cout << "### Sucessfully connected to CreepyCam" << endl;
+	
+	cout << "### Would you like to store the images remotely? (yes/no): " << endl;
+	string uploadInput;
+	getline(cin, uploadInput);
+	while(uploadInput.compare("yes") != 0 && uploadInput.compare("no") != 0){
+		cout << "### Invalid input. Try again: ";
+		getline(cin, uploadInput);
+	}
+	if(uploadInput.compare("yes") == 0){
+		upload = true;
+	}
+	if(uploadInput.compare("no") == 0){
+		upload = false;
+	}
+	
 	cout << "### Should we run this program in test mode? (yes/no): ";
 	string testInput;
 	getline(cin, testInput);
@@ -61,6 +75,10 @@ int main ()
 	if(testInput.compare("no") == 0){
 		test_mode = false;
 	}
+	
+	if(upload)
+		upload_check();
+	
 	cout << "######### SET UP COMPLETE #################" << endl;
 
 	if(test_mode == true){
@@ -118,7 +136,9 @@ int main ()
 			for (i = 0; i < NUM_THREADS; ++i) {
 				pthread_join(thr[i], NULL);
 			}
-			upload_check();
+			
+			if(upload)
+				upload_check();
 		}
 	}
 	pthread_join(nonBlockingIO, NULL);
