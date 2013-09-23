@@ -1,4 +1,5 @@
 #include "util.h"
+#include "ftp.h"
 #include "config.h"
 #include <iostream>
 #include <string>
@@ -10,6 +11,9 @@ using namespace std;
 
 int main ()
 {
+	if(test_upload())
+		cout << "yay..";
+
 	char default_dir[] = "/home/pi/CreepyCam/images/";
 	int threshold = 0;
 	int delay = 0;

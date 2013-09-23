@@ -22,14 +22,14 @@
 # The name of the applications we're trying to generate
 TARGET = CreepyCam
 CC = g++
-SRC = main.cpp util.cpp
-HDR = util.h config.h
+SRC = main.cpp util.cpp ftp.cpp
+HDR = util.h config.h ftp.h
 
 # -03 option aims to optimise as much as possible
 CFLAGS = -W -pedantic -Wall -ansi -O3
 
 # MATH + OPENCV LIBRARIES
-OPENCV = `pkg-config --cflags --libs opencv`
+OPENCV = `pkg-config --cflags --libs opencv libcurl`
 MATHFLAGS = -lm
 
 OBJ := $(SRC:.c=.o)
