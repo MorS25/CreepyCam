@@ -10,9 +10,10 @@ Clone our Git
 
 `git clone https://github.com/Jamble/CreepyCam.git`
 
-Install OpenCv
+Install OpenCv and libcURL
 
 `sudo apt-get install libopencv-dev`
+`sudo apt-get install libcurl4-openssl-dev`
 
 Build
 
