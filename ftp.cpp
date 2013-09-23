@@ -12,8 +12,10 @@ ifstream::pos_type filesize(const char* filename)
 
 bool upload_file(const char* file)
 {
-	string newUrl = FTP_DETAILS + file;
-	string filepath = IMG_DIR + file;
+	string baseUrl = FTP_DETAILS;
+	string directory = IMG_DIR;
+	string newUrl = baseUrl + file;
+	string filepath = directory + file;
 
 	CURL *curl;
 	CURLcode result;
