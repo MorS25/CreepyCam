@@ -76,18 +76,20 @@ void upload_check()
 			if (!strcmp(fileName->d_name, ".")) continue;
 			if (!strcmp(fileName->d_name, "..")) continue;
 		
-			/* Upload the file */
-			printf("Uploading: %s\n", fileName->d_name);
-			if(upload_file(fileName->d_name))
+			if (strstr(fileName->d_name, "motion"))
 			{
-				printf("---Successfully Uploaded\n");
-				
-				filepath = directory + fileName->d_name;
-				
-				if(!remove(filepath.c_str()))
-					printf("---File deleted\n");
+				/* Upload the file */
+				printf("Uploading: %s\n", fileName->d_name);
+				if(upload_file(fileName->d_name))
+				{
+					printf("---Successfully Uploaded\n");
+					
+					filepath = directory + fileName->d_name;
+					
+					if(!remove(filepath.c_str()))
+						printf("---File deleted\n");
+				}
 			}
-			
 		}
 		closedir (dir);
 	}
