@@ -1,9 +1,11 @@
 #ifndef _FTP_H_
 #define _FTP_H_
 
-#include <string> 
+#include <string.h> 
 #include <iostream>
 #include <fstream>
+#include <stdio.h>
+#include <dirent.h>
 #include <stdlib.h>
 #include "curl/curl.h"
 

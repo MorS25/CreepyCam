@@ -64,5 +64,31 @@ bool upload_file(const char* file)
 
 void upload_check()
 {
-
+	DIR *dir;
+	struct dirent *fileName;
+	string directory = IMG_DIR;
+	string filepath;
+	
+	if ((dir = opendir(IMG_DIR)) != NULL)
+	{
+		while ((fileName = readdir(dir)) != NULL)
+		{
+			if (!strcmp(fileName->d_name, ".")) continue;
+			if (!strcmp(fileName->d_name, "..")) continue;
+		
+			/* Upload the file */
+			printf("Uploading: %s\n", fileName->d_name);
+			if(upload_file(fileName->d_name))
+			{
+				printf("---Successfully Uploaded\n");
+				
+				filepath = directory + fileName->d_name;
+				
+				if(!remove(filepath.c_str()))
+					printf("---File deleted\n");
+			}
+			
+		}
+		closedir (dir);
+	}
 }

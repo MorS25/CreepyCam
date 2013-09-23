@@ -11,8 +11,7 @@ using namespace std;
 
 int main ()
 {
-	if(upload_file("test.jpeg"))
-		cout << "yay..";
+	upload_check();
 
 	char default_dir[] = "/home/pi/CreepyCam/images/";
 	int threshold = 0;
