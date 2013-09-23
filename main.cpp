@@ -118,6 +118,7 @@ int main ()
 			for (i = 0; i < NUM_THREADS; ++i) {
 				pthread_join(thr[i], NULL);
 			}
+			upload_check();
 		}
 	}
 	pthread_join(nonBlockingIO, NULL);
