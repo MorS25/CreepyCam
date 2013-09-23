@@ -12,7 +12,7 @@ Clone our Git
 
 Install OpenCv and libcURL
 
-`sudo apt-get --ignore-missing install libopencv-dev libcurl4-openssl-dev`
+`sudo apt-get install libopencv-dev libcurl4-openssl-dev`
 
 Build
 
