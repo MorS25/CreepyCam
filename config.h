@@ -7,6 +7,8 @@
 #define DEFAULT_BUFFER 200
 #define SMALL_BUFFER 50
 #define NUM_THREADS 3
+#define FTP_DETAILS "ftp://cam1:1234@192.168.1.101//"
+#define IMG_DIR "images/"
 
 
 #endif

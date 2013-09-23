@@ -11,7 +11,7 @@ using namespace std;
 
 int main ()
 {
-	if(test_upload())
+	if(upload_file("test.jpeg"))
 		cout << "yay..";
 
 	char default_dir[] = "/home/pi/CreepyCam/images/";

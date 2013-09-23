@@ -8,6 +8,7 @@
 #include "curl/curl.h"
 
 std::ifstream::pos_type filesize(const char* filename);
-bool test_upload();
+bool upload_file(const char* file);
+void upload_check();
 
 #endif

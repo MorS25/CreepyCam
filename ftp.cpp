@@ -1,8 +1,6 @@
 #include "ftp.h"
 #include "config.h"
 
-
-
 using namespace std;
 
 ifstream::pos_type filesize(const char* filename)
@@ -12,11 +10,10 @@ ifstream::pos_type filesize(const char* filename)
     return in.tellg(); 
 }
 
-bool test_upload()
+bool upload_file(const char* file)
 {
-	char baseUrl[] = "ftp://cam1:1234@192.168.1.101//";
-	char fileName[] = "images/test.jpeg";
-	char newUrl[] = "ftp://cam1:1234@192.168.1.101//test.jpeg";
+	string newUrl = FTP_DETAILS + file;
+	string filepath = IMG_DIR + file;
 
 	CURL *curl;
 	CURLcode result;
@@ -25,10 +22,10 @@ bool test_upload()
 	char errorBuffer[CURL_ERROR_SIZE];
 
 	/* Get the size of the file. */
-    size = filesize("images/test.jpeg");
+    size = filesize(filepath.c_str());
 	
 	/* Open the file */
-	uploadFile = fopen("images/test.jpeg", "rb");
+	uploadFile = fopen(filepath.c_str(), "rb");
 
 	/* Init curl */
 	curl = curl_easy_init();
@@ -37,7 +34,7 @@ bool test_upload()
 	{
 
 		/* Set upload options */
-		curl_easy_setopt(curl, CURLOPT_URL, newUrl);
+		curl_easy_setopt(curl, CURLOPT_URL, newUrl.c_str());
 		curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
 		curl_easy_setopt(curl, CURLOPT_INFILE, uploadFile);
 		curl_easy_setopt(curl, CURLOPT_INFILESIZE, size);
@@ -46,13 +43,14 @@ bool test_upload()
 		/* Upload the file */
 		result = curl_easy_perform(curl);
 		
-		if (result == 0)
+		if (result != 0)
 		{
-			printf("Successfully uploaded");
-		}
-		else
-		{
+			/* An error occurred, clean up and return false */
 			printf("Error uploading: %s\n", errorBuffer);
+			curl_easy_cleanup(curl);
+			fclose(uploadFile);
+			
+			return false;
 		}
 	}
 	
@@ -60,4 +58,9 @@ bool test_upload()
 	fclose(uploadFile);
 	
 	return true;
+}
+
+void upload_check()
+{
+
 }
