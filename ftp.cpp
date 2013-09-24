@@ -2,6 +2,8 @@
 #include "config.h"
 
 using namespace std;
+extern char ftp[SMALL_BUFFER];
+extern char imgdir[SMALL_BUFFER];
 
 ifstream::pos_type filesize(const char* filename)
 {
@@ -12,8 +14,8 @@ ifstream::pos_type filesize(const char* filename)
 
 bool upload_file(const char* file)
 {
-	string baseUrl = FTP_DETAILS;
-	string directory = IMG_DIR;
+	string baseUrl = ftp;
+	string directory = imgdir;
 	string newUrl = baseUrl + file;
 	string filepath = directory + file;
 
@@ -66,10 +68,10 @@ void upload_check()
 {
 	DIR *dir;
 	struct dirent *fileName;
-	string directory = IMG_DIR;
+	string directory = imgdir;
 	string filepath;
 	
-	if ((dir = opendir(IMG_DIR)) != NULL)
+	if ((dir = opendir(imgdir)) != NULL)
 	{
 		while ((fileName = readdir(dir)) != NULL)
 		{

@@ -1,7 +1,9 @@
+#include "config.h"
 #include "util.h"
 #include "ftp.h"
-#include "config.h"
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <string>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
@@ -9,79 +11,48 @@
 using namespace cv;
 using namespace std;
 
+int debug, debugImgs, xorImgs, delay, thresh, testmode, upload;
+char ftp[SMALL_BUFFER];
+char imgdir[SMALL_BUFFER];
+char default_dir[SMALL_BUFFER];
+
 int main ()
 {
-	char default_dir[] = "/home/pi/CreepyCam/images/";
-	int threshold = 0;
-	int delay = 0;
-	bool test_mode;
-	bool upload = false;
 	bool loop = true;
 	pthread_t nonBlockingIO;
+	pthread_t thr_ftp;
+	ifstream input;
+	string line, opt, setting;
+	input.open("config.ini");
+	if(input){
+		while(getline(input,line)){
+			tokenizeString(line, opt, setting);
+			if(processInput(opt, setting)==false){
+				cout << "Failed to process input for " << opt << endl;
+				exit(EXIT_FAILURE);
+			}
+		}
+	} else{
+		cout << "config.ini failed to open" << endl;
+		exit(EXIT_FAILURE);
+	}
+	input.close();
 	cout << "Welcome to CreepyCam" << endl;
 	cout << "Pull the latest version on" << endl;
 	cout << "https://github.com/Jamble/CreepyCam" << endl << endl;
-	cout << "############### SET UP ###############" << endl;
-	cout << "Too fast a delay and little motions will not be captured" << endl;
-	cout << "### Enter delay betweem camera shots(ms)(50+ 300 recommended): ";
-	while(!(cin >> delay)){
-		cin.clear();
-		cin.ignore(numeric_limits<streamsize>::max(), '\n');
-		cout << "### Invalid input. Try again: ";
-	}
-	delay = delay * 1000;
-	cout << "### Enter sensativity(1=low 1000=high) (200 recommended): ";
-	while(!(cin >> threshold)){
-		cin.clear();
-		cin.ignore(numeric_limits<streamsize>::max(), '\n');
-		cout << "### Invalid input. Try again: ";
-	}
 
-	/* Check if it is ok to start execution */
-	checkDir(default_dir);
+	if(checkDir(default_dir)==false){
+		exit(EXIT_FAILURE);
+	}
 	/* Init Camera */
 	VideoCapture creepyCam(0);
-	cout << "### Trying to connect to CreepyCam..." << endl;
 	if(!creepyCam.isOpened()){
 		cout << "Failed to make connection to CreepyCam TERMINATING" << endl;
 		exit(EXIT_FAILURE);
 	}
-	cout << "### Sucessfully connected to CreepyCam" << endl;
-	
-	cout << "### Would you like to store the images remotely? (yes/no): " << endl;
-	string uploadInput;
-	getline(cin, uploadInput);
-	while(uploadInput.compare("yes") != 0 && uploadInput.compare("no") != 0){
-		cout << "### Invalid input. Try again: ";
-		getline(cin, uploadInput);
-	}
-	if(uploadInput.compare("yes") == 0){
-		upload = true;
-	}
-	if(uploadInput.compare("no") == 0){
-		upload = false;
-	}
-	
-	cout << "### Should we run this program in test mode? (yes/no): ";
-	string testInput;
-	getline(cin, testInput);
-	while(testInput.compare("yes") != 0 && testInput.compare("no") != 0){
-		cout << "### Invalid input. Try again: ";
-		getline(cin, testInput);
-	}
-	if(testInput.compare("yes") == 0){
-		test_mode = true;
-	}
-	if(testInput.compare("no") == 0){
-		test_mode = false;
-	}
-	
-	if(upload)
-		upload_check();
-	
-	cout << "######### SET UP COMPLETE #################" << endl;
 
-	if(test_mode == true){
+
+	if(testmode == 1){
 		if (pthread_create(&nonBlockingIO, NULL, inputThread, &loop) != 0) {
 			cout << "Failed to create non blocking IO thread" << endl;
 			exit(EXIT_FAILURE);
@@ -98,7 +69,7 @@ int main ()
 			testImg.release();
 		}
 	} else {
-		pthread_t thr[NUM_THREADS];
+		pthread_t thr_motion[NUM_THREADS];
 		thread_data thr_data[NUM_THREADS];
 		int threadNo = 0;
 		Mat prev;
@@ -113,7 +84,13 @@ int main ()
 			cout << "Failed to create IO thread" << endl;
 			exit(EXIT_FAILURE);
 		}
-		int i, rc;
+		if(upload==1){
+			if (pthread_create(&thr_ftp, NULL, ftpThread, &loop) != 0) {
+				cout << "Failed to create a ftp thread" << endl;
+				exit(EXIT_FAILURE);
+			}
+		}
+		int i;
 		cout << "Working";
 		while(loop){
 			for (i = 0; i < NUM_THREADS; ++i) {
@@ -121,9 +98,9 @@ int main ()
 				thr_data[i].prev = prev.clone();
 				thr_data[i].curr = curr.clone();
 				thr_data[i].next = next.clone();
-				thr_data[i].dir = default_dir; 
-				thr_data[i].threshold = threshold;
-				if ((rc = pthread_create(&thr[i], NULL, motionThread, &thr_data[i]))) {
+				if(debug==1)
+					cout << "Beginning thread number " << i << endl;
+				if (pthread_create(&thr_motion[i], NULL, motionThread, &thr_data[i]) != 0) {
 						cout << "Failed to create a motion thread" << endl;
 						exit(EXIT_FAILURE);
 				}
@@ -132,16 +109,16 @@ int main ()
 				next = curr.clone();
 				creepyCam.read(prev);
 				threadNo++;
+				if(threadNo>=NUM_THREADS){
+					pthread_join(thr_motion[((i+1)%3)], NULL);
+					if(debug==1)
+						cout << "Closing thread number " << ((i+1)%3) << endl;
+				}
 			}
-			for (i = 0; i < NUM_THREADS; ++i) {
-				pthread_join(thr[i], NULL);
-			}
-			
-			if(upload)
-				upload_check();
 		}
 	}
 	pthread_join(nonBlockingIO, NULL);
+	pthread_join(thr_ftp, NULL);
 	creepyCam.release();
 	exit(EXIT_SUCCESS);
 }
