@@ -37,6 +37,14 @@ No contributions will be accepted as this is a school project
 Version History
 =========
 
+Sep 24th, 2013
+- Removed user input on execution, all config is now done from config.ini file
+- Made the FTP run on a seperate thread to avoid block and with Mutex to avoid multiple logins/uploading same file
+
+Sep 22nd, 2013
+- FTP motion image uploading added
+- Updated install instructions
+
 Sep 21st, 2013
 - You can now choose if you want to save all debug files (the differential and 3 originals) by modifying config.h and recompiling
 - Fixed an issue where images were not getting swapped around. This was due to images being overwritten due to the multiple threads. We now .clone() images so no overwrites can occur. This fixed our motion detection again.
