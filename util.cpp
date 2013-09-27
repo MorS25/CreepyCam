@@ -146,7 +146,7 @@ void *inputThread(void *arg){
 
 void *ftpThread(void *arg){
 	bool *loop = (bool *)arg;
-	while(loop){
+	while(*loop==true){
 		if(pthread_mutex_trylock(&FTPmutex)){
 			upload_check();
 			pthread_mutex_unlock(&FTPmutex);
