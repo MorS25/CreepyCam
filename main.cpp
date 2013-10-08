@@ -116,9 +116,12 @@ int main ()
 				}
 			}
 		}
+		for(i = 0;i< NUM_THREADS; i++)
+			pthread_join(thr_motion[i], NULL);
 	}
 	pthread_join(nonBlockingIO, NULL);
-	pthread_join(thr_ftp, NULL);
+	if(upload==1)
+		pthread_join(thr_ftp, NULL);
 	creepyCam.release();
 	exit(EXIT_SUCCESS);
 }
